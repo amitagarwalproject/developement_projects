@@ -3,20 +3,20 @@ from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import items
+from schemas import ItemSchema, ItemUpdateSchema
 
 blp = Blueprint("Items", __name__, description= "Operations on items")
 
 
 @blp.route("/item")
 class ItemList(MethodView):
+    @blp.response(200,ItemSchema(many=True))
     def get(self):
-        return {"items":list(items.values())}
+        return items.values()
 
-    def post(self):
-        item_data = request.get_json()
-        if "price" not in item_data or "store_id" not in item_data or "name" not in item_data:
-            abort(400, message="Bad request. Ensure that 'price','storeid','name' are included in json payload.")
-
+    @blp.arguments(ItemSchema)
+    @blp.response(200,ItemSchema)
+    def post(self,item_data):
         for item in items.values():
             if item_data["name"] == item["name"] or item_data["store_id"] == item["store_id"]:
                 abort(400, message="item already exists.")
@@ -32,17 +32,16 @@ class ItemList(MethodView):
 
 @blp.route("/item/<string:item_id>")
 class Item(MethodView):
+    @blp.response(200,ItemSchema)
     def get(self,item_id):
         try:
             return items[item_id]
         except KeyError:
             abort(404, message="item not found.")
 
-    def put(self,item_id):
-        item_data = request.get_json()
-        if "price" not in item_data or "name" not in item_data:
-            abort(400, message="Bad request. Ensure that 'price' and 'name' is in json paylaod")
-
+    @blp.arguments(ItemUpdateSchema)
+    @blp.response(200,ItemSchema)
+    def put(self,item_data,item_id):
         try:
             item = items[item_id]
             item.update(item_data)
