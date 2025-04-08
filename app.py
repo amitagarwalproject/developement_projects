@@ -4,6 +4,7 @@ from flask import Flask
 from flask_smorest import Api
 from resources.item import blp as ItemBlueprint
 from resources.store import blp as StoreBlueprint
+from resources.tag import blp as TagBlueprint
 from db import db
 import models
 
@@ -21,9 +22,18 @@ def create_app(db_url=None):
     app.config["OPENAPI_SWAGGER_UI_URL"] = "https://cdn.jsdelivr.net/npm/swagger-ui-dist/"
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url or os.getenv("DATABASE_URL","sqlite:///data.db")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    db.init_app(app)  #connecting sqlalchemy with flask app
+    db.init_app(app)  # connecting sqlalchemy with flask app
 
-    api = Api(app)
+    api = Api(app) # initializing the Flask-Smorest Api object and binding it to your Flask app.
+    '''It wraps your Flask app and adds support for:
+
+    📋 Auto-generated Swagger/OpenAPI documentation.
+
+    🛡️ Request validation via Marshmallow schemas.
+
+    🎯 Route organization using blueprints.
+
+    📦 Input parsing and output formatting made easy.'''
 
     @app.before_request
     def create_tables():
@@ -31,5 +41,6 @@ def create_app(db_url=None):
 
     api.register_blueprint(ItemBlueprint)
     api.register_blueprint(StoreBlueprint)
+    api.register_blueprint(TagBlueprint)
 
     return app

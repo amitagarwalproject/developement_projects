@@ -9,14 +9,17 @@ from schemas import ItemSchema, ItemUpdateSchema
 
 blp = Blueprint("Items", __name__, description= "Operations on items")
 
+'''is part of Flask-Smorest, which is built on top of Flask and integrates well
+ with Marshmallow for input/output validation and automatic Swagger docs generation.'''
+
 
 @blp.route("/item")
 class ItemList(MethodView):
     @blp.response(200,ItemSchema(many=True))
     def get(self):
-        return ItemModel.query.all()
+        return ItemModel.query.all() # returns the list of rows from items table
 
-    # @blp.arguments(ItemSchema) - This decorator tells Flask to:Parse the request body using the ItemSchema,
+    # @blp.arguments(ItemSchema) - This decorator tells Flask to Parse the request body using the ItemSchema,
     # Validate the input (based on required=True,
     # types, etc.),Deserialize the JSON payload into a Python dictionary
     # Instead of manually calling request.get_json(),
@@ -25,16 +28,12 @@ class ItemList(MethodView):
     @blp.response(200,ItemSchema)
     # @blp.response(200, ItemSchema)
     # Purpose: This sets the expected response schema and status code.
-    #
     # It tells Flask to:
-    #
     # Serialize the return value (usually a dictionary) using ItemSchema
-    #
     # Return a 200 OK response
-    #
     # Auto-generate Swagger documentation for it too!
     def post(self,item_data):  # item_data is passed by @blp.arguments — it’s your validated request data.
-        item = ItemModel(**item_data)
+        item = ItemModel(**item_data) # dictionary unpacking
 
         try:
             db.session.add(item)
