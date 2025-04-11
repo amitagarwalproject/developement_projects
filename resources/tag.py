@@ -2,8 +2,8 @@ from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import db
 from sqlalchemy.exc import SQLAlchemyError
-from models import TagModel, StoreModel
-from schemas import TagSchema
+from models import TagModel, StoreModel, ItemModel
+from schemas import TagSchema, TagAndItemSchema
 
 blp = Blueprint("Tags", "tags", description="Operations on Tags")
 
@@ -29,6 +29,25 @@ class TagsInStore(MethodView):
             abort(500,message = str(e))
 
         return tag
+
+    @blp.route("/item/<string:item_id>/tag/<string:tag_id>")
+    class LinkTagsToItem(MethodView):
+        @blp.response(201,TagSchema)
+        def post(self, item_id, tag_id):
+            item = ItemModel.query.get_or_404(item_id)
+            tag = TagModel.query.get_or_404(tag_id)
+
+            item.tags.append(tag)
+            try:
+                db.session.add(item)
+                db.session.commit()
+            except SQLAlchemyError:
+                abort(500, message = "An error occurred while inserting the tag")
+
+            return tag
+
+
+
 
     @blp.route("/tag/<string:tag_id>")
     class Tag(MethodView):
