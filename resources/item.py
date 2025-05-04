@@ -1,5 +1,3 @@
-import uuid
-from flask import request
 from flask.views import MethodView
 from flask_smorest import Blueprint, abort
 from db import db
@@ -16,6 +14,7 @@ blp = Blueprint("Items", __name__, description= "Operations on items")
 
 @blp.route("/item")
 class ItemList(MethodView):
+    @jwt_required()
     @blp.response(200,ItemSchema(many=True))
     def get(self):
         return ItemModel.query.all() # returns the list of rows from items table
@@ -25,14 +24,16 @@ class ItemList(MethodView):
     # types, etc.),Deserialize the JSON payload into a Python dictionary
     # Instead of manually calling request.get_json(),
     # you get item_data as a clean Python dictionary with validated fields
-    @blp.arguments(ItemSchema)
-    @blp.response(200,ItemSchema)
+
     # @blp.response(200, ItemSchema)
     # Purpose: This sets the expected response schema and status code.
     # It tells Flask to:
     # Serialize the return value (usually a dictionary) using ItemSchema
     # Return a 200 OK response
     # Auto-generate Swagger documentation for it too!
+    @jwt_required()
+    @blp.arguments(ItemSchema)
+    @blp.response(200, ItemSchema)
     def post(self,item_data):  # item_data is passed by @blp.arguments — it’s your validated request data.
         item = ItemModel(**item_data) # dictionary unpacking
 
@@ -47,11 +48,13 @@ class ItemList(MethodView):
 
 @blp.route("/item/<string:item_id>")
 class Item(MethodView):
+    @jwt_required()
     @blp.response(200,ItemSchema)
     def get(self,item_id):
         item = ItemModel.query.get_or_404(item_id)
         return item
 
+    @jwt_required()
     @blp.arguments(ItemUpdateSchema)
     @blp.response(200,ItemSchema)
     def put(self,item_data,item_id):
@@ -66,6 +69,7 @@ class Item(MethodView):
         db.session.commit()
         return item
 
+    @jwt_required()
     def delete(self,item_id):
         item = ItemModel.query.get_or_404(item_id)
         db.session.delete(item)

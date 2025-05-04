@@ -47,7 +47,8 @@ class TagAndItemSchema(Schema):
 
 '''dump_only = True - This field will only appear in the response and not required or allowed in the request 
 load_only = True - You want to accept some data in input (like a password) But you don’t want to show it in the 
-output (for security) required = True - required in the request data'''
+output (for security) 
+required = True - required in the request data'''
 
 
 class UserSchema(Schema):
